@@ -7,6 +7,8 @@ var User = require('../models/user');
 var router = express.Router();
 var bCrypt = require('bcrypt-nodejs');
 var jwt = require('jsonwebtoken');
+var expressWs = require('express-ws')(router);
+
 
 router.get('/', function (req, res) {
     res.render('index', { user : req.user });
@@ -54,7 +56,15 @@ router.post('/login', function(req, res, next) {
 });
 
 router.post("/chats", passport.authenticate('jwt'), function(req, res){
-  res.json("Success! You can not see this without a token");
+  User.find({}, function(err, users) {
+    var userMap = [];
+
+    users.forEach(function(user) {
+      userMap.push(user);
+    });
+
+    res.json(userMap);  
+  });
 });
 
 router.get('/logout', function(req, res) {
@@ -65,6 +75,8 @@ router.get('/logout', function(req, res) {
 router.get('/ping', function(req, res){
     res.status(200).send("pong!");
 });
+
+
 
 module.exports = router;
 
