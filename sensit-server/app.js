@@ -12,7 +12,6 @@ var JWTStrategy = require('passport-jwt').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
 
 var routes = require('./routes/index');
-var chat = require('./routes/chat');
 var users = require('./routes/users');
 
 var app = express();
