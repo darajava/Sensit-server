@@ -1,17 +1,24 @@
 {
   "name": "sensit-server",
-  "version": "0.0.1",
-  "description": "Backend server for securely sending chat messages",
-  "main": "index.js",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./bin/www"
   },
-  "author": "Dara Javaherian",
   "dependencies": {
-    "express": "^4.16.2",
-    "node-gyp": "^3.6.2",
+    "body-parser": "^1.18.2",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "^4.15.5",
+    "express-ws": "^3.0.0",
+    "jade": "~1.11.0",
+    "jsonwebtoken": "^8.1.0",
+    "lodash": "^4.17.4",
+    "morgan": "~1.9.0",
+    "passport": "^0.4.0",
     "passport-jwt": "^3.0.1",
-    "websocket": "^1.0.25",
-    "ws": "^3.3.2"
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^4.4.0",
+    "serve-favicon": "~2.4.5"
   }
 }
