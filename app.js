@@ -52,21 +52,15 @@ opts.secretOrKey = 'tokenSecret';
 // opts.authScheme = 'JWT';
 
 passport.use(new JWTStrategy(opts, function(jwt_payload, done) {
-    console.log(jwt_payload);
     User.findOne({username: jwt_payload.username}, function(err, user) {
         if (err) {
-            console.log('1');
-            console.log(err);
             return done(err, false);
         }
 
         if (user) {
-            console.log('2');
-            console.log(user);
             return done(null, user);
         } else {
             return done(null, false);
-            // or you could create a new account
         }
     });
 }));

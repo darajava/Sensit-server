@@ -3,6 +3,7 @@ var router = express.Router();
 
 var passport = require('passport');
 var User = require('../models/user');
+var Message = require('../models/message');
 var router = express.Router();
 var bCrypt = require('bcrypt-nodejs');
 var jwt = require('jsonwebtoken');
@@ -70,6 +71,50 @@ router.post("/chats", passport.authenticate('jwt'), function(req, res){
     });
 
     res.json(userMap);  
+  });
+});
+
+router.post("/messages", passport.authenticate('jwt'), function(req, res){
+  console.log(req.body);
+  Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
+    var messageMap = [];
+
+    messages.forEach(function(message) {
+      messageMap.push(message);
+    });
+
+    console.log(messageMap);
+
+    res.json(messageMap);  
+  });
+});
+
+router.post("/message-delivered", passport.authenticate('jwt'), function(req, res){
+  console.log(req.body);
+  Message.update(
+    { _id: req.body.message._id }, 
+    { $push: { deliveredTo: req.body.userId } },
+    (err, message) => {
+      if (err) {
+        res.send(err);
+      }
+      res.json({success: true})
+    }
+  );
+});
+
+router.post("/message-read", passport.authenticate('jwt'), function(req, res){
+  console.log(req.body);
+  Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
+    var messageMap = [];
+
+    messages.forEach(function(message) {
+      messageMap.push(message);
+    });
+
+    console.log(messageMap);
+
+    res.json(messageMap);  
   });
 });
 

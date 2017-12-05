@@ -8,6 +8,7 @@ let mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/sensit');
 
 let Room = require('./models/room');
+let Message = require('./models/message');
 
 let clients = [ ];
 
@@ -48,8 +49,6 @@ wss.on('request', (request) => {
 
   users.push(request.resourceURL.query.myId);
 
-  console.log(clients[index]);
-
   if (roomId && typeof roomId !== 'undefined') {
     // Always make a new room, it won't overwrite if it exists
     room = new Room({
@@ -57,40 +56,49 @@ wss.on('request', (request) => {
       users: users,
     });
     room.save();
+  } else {
+    // No room, exit somehow lol
   }
 
   connection.on('message', (message) => {
 
     let parsedMessage = JSON.parse(message.utf8Data);
     
-    for (let i = 0; i < clients.length; i++) {
-      let obj = {
-        time: (new Date()).getTime(),
-        text: parsedMessage.text,
-        userId: clients[index].userId,
-      };
+    let messageJSON = {
+      room: roomId,
+      text: parsedMessage.text,
+      sentBy: clients[index].userId,
+    };
 
-      // broadcast message to all connected clients
-      let json = JSON.stringify({ type:'message', data: obj });
+    let dbMessage = new Message(messageJSON);
 
-      try {
-        // XXX: get new key
-        console.log(room.users.includes(clients[i].myId));
-        console.log(room.users);
-        console.log(clients[i].userId);
-        var decoded = jwt.verify(parsedMessage.token, 'tokenSecret');
+    dbMessage.save((err, message) => {
+      messageJSON = message;
 
-        if (room.users.includes(clients[i].userId)) {
-          clients[i].send(json);
+      console.log(clients.length);
+
+      for (let i = 0; i < clients.length; i++) {
+        let json = JSON.stringify({ type:'message', data: messageJSON });
+
+        try {
+          // XXX: get new key
+          // console.log(room.users.includes(clients[i].myId));
+          // console.log(room.users);
+          // console.log(clients[i].userId);
+          var decoded = jwt.verify(parsedMessage.token, 'tokenSecret');
+
+          if (room.users.includes(clients[i].userId)) {
+            clients[i].send(json);
+          }
+
+          // console.log(clients[i]);
+        } catch(err) {
+          console.log(err);
+          console.log('Error in sector 7G');
         }
-
-        // console.log(clients[i]);
-      } catch(err) {
-        console.log(err);
-        console.log('Error in sector 7G');
       }
+    });
 
-    }
   });
 
 });
