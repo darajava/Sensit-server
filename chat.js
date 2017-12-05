@@ -63,22 +63,19 @@ wss.on('request', (request) => {
   connection.on('message', (message) => {
 
     let parsedMessage = JSON.parse(message.utf8Data);
-    
-    let messageJSON = {
-      room: roomId,
-      text: parsedMessage.text,
-      sentBy: clients[index].userId,
-    };
 
-    let dbMessage = new Message(messageJSON);
+    if (parsedMessage.type === 'delivered') {
+      parsedMessage = parsedMessage.data;
 
-    dbMessage.save((err, message) => {
-      messageJSON = message;
-
-      console.log(clients.length);
+      console.log('I am deliver');
 
       for (let i = 0; i < clients.length; i++) {
-        let json = JSON.stringify({ type:'message', data: messageJSON });
+        let deliverJSON = {
+          users: users,
+          messageId: parsedMessage._id,
+          deliveredTo: parsedMessage.deliveredTo[0],
+        };
+        let json = JSON.stringify({ type: 'deliver-reciept', data: deliverJSON });
 
         try {
           // XXX: get new key
@@ -97,7 +94,49 @@ wss.on('request', (request) => {
           console.log('Error in sector 7G');
         }
       }
-    });
+    } else {
+      // we're dealing with a message TODO: add proper logic for message type
+
+      parsedMessage = parsedMessage.data;
+      
+      let messageJSON = {
+        room: roomId,
+        text: parsedMessage.text,
+        sentBy: clients[index].userId,
+        forUsers: users,
+      };
+
+      let dbMessage = new Message(messageJSON);
+
+      dbMessage.save((err, message) => {
+        messageJSON = message;
+
+        console.log(message);
+
+        for (let i = 0; i < clients.length; i++) {
+          let json = JSON.stringify({ type: 'message', data: messageJSON });
+
+          try {
+            // XXX: get new key
+            // console.log(room.users.includes(clients[i].myId));
+            // console.log(room.users);
+            // console.log(clients[i].userId);
+            var decoded = jwt.verify(parsedMessage.token, 'tokenSecret');
+
+            if (room.users.includes(clients[i].userId)) {
+              clients[i].send(json);
+            }
+
+            // console.log(clients[i]);
+          } catch(err) {
+            console.log(err);
+            console.log('Error in sector 7G');
+          }
+        }
+      });
+    }
+
+   
 
   });
 
