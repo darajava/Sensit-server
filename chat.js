@@ -16,6 +16,37 @@ let server = http.createServer(function(request, response) {});
 
 server.listen(1338, function() {});
 
+function sendDeliveryReciept(message, users, room) {
+  for (let i = 0; i < clients.length; i++) {
+    let deliverJSON = {
+      users: users,
+      messageId: message._id,
+      deliveredTo: message.deliveredTo,
+    };
+
+    console.log(message.deliveredTo);
+
+    let json = JSON.stringify({ type: 'deliver-reciept', data: deliverJSON });
+
+    try {
+      // XXX: get new key
+      // console.log(room.users.includes(clients[i].myId));
+      // console.log(room.users);
+      // console.log(clients[i].userId);
+      var decoded = jwt.verify(message.token, 'tokenSecret');
+
+      if (room.users.includes(clients[i].userId)) {
+        clients[i].send(json);
+      }
+
+      // console.log(clients[i]);
+    } catch(err) {
+      console.log(err);
+      console.log('Error in sector 7G');
+    }
+  }
+}
+
 /**
  * WebSocket server
  */
@@ -23,18 +54,6 @@ let wss = new webSocketServer({
   // http://tools.ietf.org/html/rfc6455#page-6
   httpServer: server
 });
-
-/**
-The way I like to work with 'ws' is to convert everything to an event if possible.
-**/
-function toEvent (message) {
-  try {
-    let event = JSON.parse(message);
-    this.emit(event.type, event.payload);
-  } catch(err) {
-    console.log('not an event' , err);
-  }
-}
 
 wss.on('request', (request) => {
 
@@ -65,35 +84,7 @@ wss.on('request', (request) => {
     let parsedMessage = JSON.parse(message.utf8Data);
 
     if (parsedMessage.type === 'delivered') {
-      parsedMessage = parsedMessage.data;
-
-      console.log('I am deliver');
-
-      for (let i = 0; i < clients.length; i++) {
-        let deliverJSON = {
-          users: users,
-          messageId: parsedMessage._id,
-          deliveredTo: parsedMessage.deliveredTo[0],
-        };
-        let json = JSON.stringify({ type: 'deliver-reciept', data: deliverJSON });
-
-        try {
-          // XXX: get new key
-          // console.log(room.users.includes(clients[i].myId));
-          // console.log(room.users);
-          // console.log(clients[i].userId);
-          var decoded = jwt.verify(parsedMessage.token, 'tokenSecret');
-
-          if (room.users.includes(clients[i].userId)) {
-            clients[i].send(json);
-          }
-
-          // console.log(clients[i]);
-        } catch(err) {
-          console.log(err);
-          console.log('Error in sector 7G');
-        }
-      }
+      sendDeliveryReciept(parsedMessage.data, users, room);
     } else {
       // we're dealing with a message TODO: add proper logic for message type
 
@@ -111,16 +102,15 @@ wss.on('request', (request) => {
       dbMessage.save((err, message) => {
         messageJSON = message;
 
-        console.log(message);
-
         for (let i = 0; i < clients.length; i++) {
           let json = JSON.stringify({ type: 'message', data: messageJSON });
 
           try {
-            // XXX: get new key
             // console.log(room.users.includes(clients[i].myId));
             // console.log(room.users);
             // console.log(clients[i].userId);
+
+            // XXX: get new key
             var decoded = jwt.verify(parsedMessage.token, 'tokenSecret');
 
             if (room.users.includes(clients[i].userId)) {
