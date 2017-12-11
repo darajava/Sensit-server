@@ -32,9 +32,12 @@ let Message = new Schema({
     type: Boolean,
     default: false,
   },
+  timestamp: {
+    type: Number, // This is the timestamp the frontend generates
+  },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now() // This is the time the message was inserted into the DB
   },
 });
 

@@ -95,6 +95,7 @@ wss.on('request', (request) => {
         text: parsedMessage.text,
         sentBy: clients[index].userId,
         forUsers: users,
+        timestamp: parsedMessage.timestamp,
       };
 
       let dbMessage = new Message(messageJSON);
