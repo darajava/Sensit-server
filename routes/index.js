@@ -62,7 +62,7 @@ router.post('/login', function(req, res, next) {
 
 });
 
-router.post("/chats", passport.authenticate('jwt'), function(req, res){
+router.post("/users", passport.authenticate('jwt'), function(req, res){
   User.find({}, function(err, users) {
     var userMap = [];
 
@@ -70,13 +70,17 @@ router.post("/chats", passport.authenticate('jwt'), function(req, res){
       userMap.push(user);
     });
 
-    res.json(userMap);  
+    res.json(userMap);
   });
 });
 
 router.post("/messages", passport.authenticate('jwt'), function(req, res){
   console.log(req.body);
   Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
+    if (err) {
+      return res.send(err);
+    }
+
     var messageMap = [];
 
     messages.forEach(function(message) {
@@ -85,8 +89,49 @@ router.post("/messages", passport.authenticate('jwt'), function(req, res){
 
     console.log(messageMap);
 
-    res.json(messageMap);  
+    res.json(messageMap);
   });
+});
+
+router.post("/last-online", passport.authenticate('jwt'), function(req, res) {
+  console.log(req.body);
+  console.log('I am last online')
+  console.log(req.body)
+  User.update(
+    { _id: req.body.userId }, 
+    { lastOnline: Date.now() },
+    (err, raw) => {
+      if (err) {
+        return res.send(err);
+      }
+
+      console.log(raw);
+      return res.json({success: true})
+    }
+  );
+});
+
+router.get("/last-online", passport.authenticate('jwt'), function(req, res) {
+
+  User.findOne(
+    { _id: req.query.id },
+    (err, user) => {
+      if (err) {
+        return res.send(err);
+      }
+
+      console.log({
+        success: true,
+        lastOnline: req.query.id,
+        ss: user,
+      });
+
+      return res.json({
+        success: true,
+        lastOnline: user.lastOnline,
+      })
+    }
+  );
 });
 
 router.post("/message-delivered", passport.authenticate('jwt'), function(req, res){
@@ -96,9 +141,9 @@ router.post("/message-delivered", passport.authenticate('jwt'), function(req, re
     { $push: { deliveredTo: req.body.userId } },
     (err, message) => {
       if (err) {
-        res.send(err);
+        return res.send(err);
       }
-      res.json({success: true})
+      return res.json({success: true})
     }
   );
 });
@@ -114,7 +159,7 @@ router.post("/message-read", passport.authenticate('jwt'), function(req, res){
 
     console.log(messageMap);
 
-    res.json(messageMap);  
+    return res.json(messageMap);  
   });
 });
 

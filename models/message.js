@@ -37,7 +37,7 @@ let Message = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now() // This is the time the message was inserted into the DB
+    default: Date.now // This is the time the message was inserted into the DB
   },
 });
 
