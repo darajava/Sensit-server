@@ -112,7 +112,6 @@ router.post("/last-online", passport.authenticate('jwt'), function(req, res) {
 });
 
 router.get("/last-online", passport.authenticate('jwt'), function(req, res) {
-
   User.findOne(
     { _id: req.query.id },
     (err, user) => {
