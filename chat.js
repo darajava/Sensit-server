@@ -47,6 +47,34 @@ function sendDeliveryReciept(message, users, room) {
   }
 }
 
+function sendTypingEvent(message, users, room) {
+  for (let i = 0; i < clients.length; i++) {
+    let typingJSON = {
+      users: users,
+      typing: message.typing,
+    };
+
+    let json = JSON.stringify({ type: 'typing', data: typingJSON });
+
+    try {
+      // XXX: get new key
+      // console.log(room.users.includes(clients[i].myId));
+      // console.log(room.users);
+      // console.log(clients[i].userId);
+      var decoded = jwt.verify(message.token, 'tokenSecret');
+
+      if (room.users.includes(clients[i].userId) && message.userId !== clients[i].userId) {
+        clients[i].send(json);
+      }
+
+      // console.log(clients[i]);
+    } catch(err) {
+      console.log(err);
+      console.log('Error in sector 7G');
+    }
+  }
+}
+
 /**
  * WebSocket server
  */
@@ -85,6 +113,8 @@ wss.on('request', (request) => {
 
     if (parsedMessage.type === 'delivered') {
       sendDeliveryReciept(parsedMessage.data, users, room);
+    } else if (parsedMessage.type === 'typing') {
+      sendTypingEvent(parsedMessage.data, users, room);
     } else {
       // we're dealing with a message TODO: add proper logic for message type
 
