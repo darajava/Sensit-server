@@ -47,6 +47,37 @@ function sendDeliveryReciept(message, users, room) {
   }
 }
 
+function sendSeenReciept(message, users, room) {
+  for (let i = 0; i < clients.length; i++) {
+    let deliverJSON = {
+      users: users,
+      messageId: message._id,
+      seenBy: message.seenBy,
+    };
+
+    console.log(message.seenBy);
+
+    let json = JSON.stringify({ type: 'seen-reciept', data: deliverJSON });
+
+    try {
+      // XXX: get new key
+      // console.log(room.users.includes(clients[i].myId));
+      // console.log(room.users);
+      // console.log(clients[i].userId);
+      var decoded = jwt.verify(message.token, 'tokenSecret');
+
+      if (room.users.includes(clients[i].userId)) {
+        clients[i].send(json);
+      }
+
+      // console.log(clients[i]);
+    } catch(err) {
+      console.log(err);
+      console.log('Error in sector 7G');
+    }
+  }
+}
+
 function sendTypingEvent(message, users, room) {
   for (let i = 0; i < clients.length; i++) {
     let typingJSON = {
@@ -113,6 +144,8 @@ wss.on('request', (request) => {
 
     if (parsedMessage.type === 'delivered') {
       sendDeliveryReciept(parsedMessage.data, users, room);
+    } else if (parsedMessage.type === 'seen') {
+      sendSeenReciept(parsedMessage.data, users, room);
     } else if (parsedMessage.type === 'typing') {
       sendTypingEvent(parsedMessage.data, users, room);
     } else {

@@ -147,19 +147,18 @@ router.post("/message-delivered", passport.authenticate('jwt'), function(req, re
   );
 });
 
-router.post("/message-read", passport.authenticate('jwt'), function(req, res){
+router.post("/message-seen", passport.authenticate('jwt'), function(req, res){
   console.log(req.body);
-  Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
-    var messageMap = [];
-
-    messages.forEach(function(message) {
-      messageMap.push(message);
-    });
-
-    console.log(messageMap);
-
-    return res.json(messageMap);  
-  });
+  Message.update(
+    { _id: req.body.message._id }, 
+    { $push: { seenBy: req.body.userId } },
+    (err, message) => {
+      if (err) {
+        return res.send(err);
+      }
+      return res.json({success: true})
+    }
+  );
 });
 
 router.get('/logout', function(req, res) {

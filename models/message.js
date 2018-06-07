@@ -20,7 +20,7 @@ let Message = new Schema({
     type: String,
     required: true,
   },
-  readBy: {
+  seenBy: {
     type: [String],
     default: []
   },
