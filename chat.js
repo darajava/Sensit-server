@@ -86,6 +86,7 @@ function sendTypingEvent(message, users, room) {
       users: users,
       typing: message.typing,
       room: message.room,
+      username: message.username,
     };
 
     let json = JSON.stringify({ type: 'typing', data: typingJSON });
@@ -163,6 +164,7 @@ wss.on('request', (request) => {
         room: roomId,
         text: parsedMessage.text,
         sentBy: clients[index].userId,
+        sentByUsername: parsedMessage.username,
         forUsers: users,
         timestamp: parsedMessage.timestamp,
       };

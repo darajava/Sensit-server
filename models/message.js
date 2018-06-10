@@ -20,6 +20,10 @@ let Message = new Schema({
     type: String,
     required: true,
   },
+  sentByUsername: {
+    type: String,
+    required: true,
+  },
   seenBy: {
     type: [String],
     default: []
