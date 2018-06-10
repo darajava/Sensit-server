@@ -5,6 +5,7 @@ let Room = new Schema({
   _id: {type: String, trim: true, index: { unique: true }},
   users: [String],
   name: String,
+  lastMessage: String,
   createdAt: { type: Date, default: Date.now },
   icon: String,
 });

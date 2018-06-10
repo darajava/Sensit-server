@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 
-var passport = require('passport');
-var User = require('../models/user');
-var Message = require('../models/message');
-var router = express.Router();
-var bCrypt = require('bcrypt-nodejs');
-var jwt = require('jsonwebtoken');
-var expressWs = require('express-ws')(router);
+let passport = require('passport');
+let User = require('../models/user');
+let Room = require('../models/room');
+let Message = require('../models/message');
+let bCrypt = require('bcrypt-nodejs');
+let jwt = require('jsonwebtoken');
+let expressWs = require('express-ws')(router);
 
 
 router.get('/', function (req, res) {
@@ -19,9 +19,10 @@ router.post('/register', function(req, res) {
     if (err) {
       res.status(401);
       res.send({success: false});
+      console.log(err);
     }
 
-    passport.authenticate('local')(req, res, function () {
+    passport.authenticate('local')(req, res, () => {
       res.status(200);
       res.send({success: true});
     });
@@ -46,7 +47,7 @@ router.post('/login', function(req, res, next) {
     }
 
     // XXX: update secret
-    var token = jwt.sign({
+    let token = jwt.sign({
       id: user.id,
       username: req.body.username
     }, 'tokenSecret');
@@ -55,6 +56,7 @@ router.post('/login', function(req, res, next) {
     return res.json({
       success: true,
       token: token,
+      user,
       id: user.id,
     });
 
@@ -62,15 +64,52 @@ router.post('/login', function(req, res, next) {
 
 });
 
-router.post("/users", passport.authenticate('jwt'), function(req, res){
-  User.find({}, function(err, users) {
-    var userMap = [];
+router.post("/users", passport.authenticate('jwt'),(req, res) => {
+  User.find({}, (err, users) => {
+    let userMap = [];
 
-    users.forEach(function(user) {
+    users.forEach((user) => {
       userMap.push(user);
     });
 
     res.json(userMap);
+  });
+});
+
+function sendResponse(err, roomMap, res) {
+  res.json(roomMap)
+}
+
+router.post("/rooms", passport.authenticate('jwt'), (req, res) => {
+  Room.find({users: req.body.userId}, (err, rooms) => {
+    let roomMap = [];
+
+    let ctr = 0;
+
+    rooms.forEach((room) => {
+
+      // If the room doesn't have a name, set a default one
+      if (!room.name || room.name.length === 0) {
+        User.find({_id: room.users}, (err, users) => {
+          users.forEach((user) => {
+            if (!room.name) room.name = '';
+            room.name += user.username + ", ";
+          });
+          console.log(room.name);
+          ctr++; 
+          roomMap.push(room);
+          if (ctr === rooms.length) {
+            sendResponse(err, roomMap, res);
+          }
+        });
+      } else {
+        ctr++; 
+        roomMap.push(room);
+        if (ctr === rooms.length) {
+          sendResponse(err, roomMap, res);
+        }
+      }
+    });
   });
 });
 
@@ -81,7 +120,7 @@ router.post("/messages", passport.authenticate('jwt'), function(req, res){
       return res.send(err);
     }
 
-    var messageMap = [];
+    let messageMap = [];
 
     messages.forEach(function(message) {
       messageMap.push(message);

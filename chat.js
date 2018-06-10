@@ -22,6 +22,7 @@ function sendDeliveryReciept(message, users, room) {
       users: users,
       messageId: message._id,
       deliveredTo: message.deliveredTo,
+      room: message.room,
     };
 
     console.log(message.deliveredTo);
@@ -53,6 +54,7 @@ function sendSeenReciept(message, users, room) {
       users: users,
       messageId: message._id,
       seenBy: message.seenBy,
+      room: message.room,
     };
 
     console.log(message.seenBy);
@@ -83,6 +85,7 @@ function sendTypingEvent(message, users, room) {
     let typingJSON = {
       users: users,
       typing: message.typing,
+      room: message.room,
     };
 
     let json = JSON.stringify({ type: 'typing', data: typingJSON });
@@ -119,7 +122,10 @@ wss.on('request', (request) => {
   let connection = request.accept(null, request.origin); 
   let index = clients.push(connection) - 1;
   
+
+  console.log(request.resourceURL.query.room);
   let roomId = request.resourceURL.query.room;
+
   let users = JSON.parse(request.resourceURL.query.users);
   let room;
 
