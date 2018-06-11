@@ -113,6 +113,38 @@ router.post("/rooms", passport.authenticate('jwt'), (req, res) => {
   });
 });
 
+router.post("/chats", passport.authenticate('jwt'), (req, res) => {
+  Room.find({users: req.body.userId}).sort({lastMessageTime: -1}).exec((err, rooms) => {
+    let roomMap = [];
+
+    let ctr = 0;
+
+    rooms.forEach((room) => {
+      // If the room doesn't have a name, set a default one
+      if (!room.name || room.name.length === 0) {
+        User.find({_id: room.users}, (err, users) => {
+          users.forEach((user) => {
+            if (!room.name) room.name = '';
+            room.name += user.username + ", ";
+          });
+          console.log(room.name);
+          ctr++; 
+          roomMap.push(room);
+          if (ctr === rooms.length) {
+            sendResponse(err, roomMap, res);
+          }
+        });
+      } else {
+        ctr++; 
+        roomMap.push(room);
+        if (ctr === rooms.length) {
+          sendResponse(err, roomMap, res);
+        }
+      }
+    });
+  });
+});
+
 router.post("/messages", passport.authenticate('jwt'), function(req, res){
   console.log(req.body);
   Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
