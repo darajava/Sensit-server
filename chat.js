@@ -137,7 +137,7 @@ wss.on('request', (request) => {
   if (roomId && typeof roomId !== 'undefined') {
     Room.find({_id: roomId}, (err, rooms) => { 
       if(rooms.length > 0) {
-        room = rooms[i];
+        room = rooms[0];
       } else {
         room = new Room({
           _id: roomId,
@@ -148,7 +148,16 @@ wss.on('request', (request) => {
         room.save();
       }
 
-      connection.on('message', listenForMessages);
+      connection.on('message', (message) => {
+        listenForMessages(
+          message,
+          users,
+          room,
+          roomId,
+          index,
+          clients,
+        )
+      });
     }); 
   } else {
     // todo: handle error
@@ -157,7 +166,7 @@ wss.on('request', (request) => {
 
 });
 
-let listenForMessages = (message) => {
+let listenForMessages = (message, users, room, roomId, index, clients,) => {
   let parsedMessage = JSON.parse(message.utf8Data);
 
   if (parsedMessage.type === 'delivered') {
@@ -179,6 +188,10 @@ let listenForMessages = (message) => {
       forUsers: users,
       timestamp: parsedMessage.timestamp,
     };
+
+    room.lastMessage = parsedMessage.text;
+    room.lastMessageTime = parsedMessage.timestamp;
+    room.save();
 
     let dbMessage = new Message(messageJSON);
 
