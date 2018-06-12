@@ -155,7 +155,7 @@ wss.on('request', (request) => {
           room,
           roomId,
           index,
-          clients,
+          clients
         )
       });
     }); 
@@ -166,7 +166,7 @@ wss.on('request', (request) => {
 
 });
 
-let listenForMessages = (message, users, room, roomId, index, clients,) => {
+let listenForMessages = (message, users, room, roomId, index, clients) => {
   let parsedMessage = JSON.parse(message.utf8Data);
 
   if (parsedMessage.type === 'delivered') {
