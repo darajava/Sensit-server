@@ -10,7 +10,7 @@ mongoose.connect('mongodb://localhost/sensit');
 let Room = require('./models/room');
 let Message = require('./models/message');
 
-let clients = [ ];
+let clients = [];
 
 let server = http.createServer(function(request, response) {});
 
@@ -25,25 +25,25 @@ function sendDeliveryReciept(message, users, room) {
       room: message.room,
     };
 
-    console.log(message.deliveredTo);
+    //console.log(message.deliveredTo);
 
     let json = JSON.stringify({ type: 'deliver-reciept', data: deliverJSON });
 
     try {
       // XXX: get new key
-      // console.log(room.users.includes(clients[i].myId));
-      // console.log(room.users);
-      // console.log(clients[i].userId);
+      // //console.log(room.users.includes(clients[i].myId));
+      // //console.log(room.users);
+      // //console.log(clients[i].userId);
       var decoded = jwt.verify(message.token, 'tokenSecret');
 
       if (room.users.includes(clients[i].userId)) {
         clients[i].send(json);
       }
 
-      // console.log(clients[i]);
+      // //console.log(clients[i]);
     } catch(err) {
-      console.log(err);
-      console.log('Error in sector 7G');
+      //console.log(err);
+      //console.log('Error in sector 7G');
     }
   }
 }
@@ -57,25 +57,25 @@ function sendSeenReciept(message, users, room) {
       room: message.room,
     };
 
-    console.log(message.seenBy);
+    //console.log(message.seenBy);
 
     let json = JSON.stringify({ type: 'seen-reciept', data: deliverJSON });
 
     try {
       // XXX: get new key
-      // console.log(room.users.includes(clients[i].myId));
-      // console.log(room.users);
-      // console.log(clients[i].userId);
+      // //console.log(room.users.includes(clients[i].myId));
+      // //console.log(room.users);
+      // //console.log(clients[i].userId);
       var decoded = jwt.verify(message.token, 'tokenSecret');
 
       if (room.users.includes(clients[i].userId)) {
         clients[i].send(json);
       }
 
-      // console.log(clients[i]);
+      // //console.log(clients[i]);
     } catch(err) {
-      console.log(err);
-      console.log('Error in sector 7G');
+      //console.log(err);
+      //console.log('Error in sector 7G');
     }
   }
 }
@@ -93,19 +93,19 @@ function sendTypingEvent(message, users, room) {
 
     try {
       // XXX: get new key
-      // console.log(room.users.includes(clients[i].myId));
-      // console.log(room.users);
-      // console.log(clients[i].userId);
+      // //console.log(room.users.includes(clients[i].myId));
+      // //console.log(room.users);
+      // //console.log(clients[i].userId);
       var decoded = jwt.verify(message.token, 'tokenSecret');
 
       if (room.users.includes(clients[i].userId) && message.userId !== clients[i].userId) {
         clients[i].send(json);
       }
 
-      // console.log(clients[i]);
+      // //console.log(clients[i]);
     } catch(err) {
-      console.log(err);
-      console.log('Error in sector 7G');
+      //console.log(err);
+      //console.log('Error in sector 7G');
     }
   }
 }
@@ -119,22 +119,24 @@ let wss = new webSocketServer({
 });
 
 wss.on('request', (request) => {
-
   let connection = request.accept(null, request.origin); 
   let index = clients.push(connection) - 1;
-  
 
-  console.log(request.resourceURL.query.room);
   let roomId = request.resourceURL.query.room;
 
-  let users = JSON.parse(request.resourceURL.query.users);
-  let room;
+  console.log(request.resourceURL.query);
 
   clients[index].userId = request.resourceURL.query.myId;
 
-  users.push(request.resourceURL.query.myId);
-
   if (roomId && typeof roomId !== 'undefined') {
+    //console.log((roomId));
+    //console.log((request.resourceURL.query.users));
+    let users = JSON.parse(request.resourceURL.query.users);
+
+    let room;
+
+    users.push(request.resourceURL.query.myId);
+
     Room.find({_id: roomId}, (err, rooms) => { 
       if(rooms.length > 0) {
         room = rooms[0];
@@ -149,6 +151,8 @@ wss.on('request', (request) => {
       }
 
       connection.on('message', (message) => {
+      console.log('message1');
+
         listenForMessages(
           message,
           users,
@@ -160,13 +164,18 @@ wss.on('request', (request) => {
       });
     }); 
   } else {
-    // todo: handle error
+    console.log('else');
+    connection.on('message', (message) => {
+      console.log('message');
+        //console.log(message, 'mess');
+    });
   }
 
 
 });
 
 let listenForMessages = (message, users, room, roomId, index, clients) => {
+  //console.log(message.utf8Data, 'ss');
   let parsedMessage = JSON.parse(message.utf8Data);
 
   if (parsedMessage.type === 'delivered') {
@@ -202,9 +211,9 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
         let json = JSON.stringify({ type: 'message', data: messageJSON });
 
         try {
-          // console.log(room.users.includes(clients[i].myId));
-          // console.log(room.users);
-          // console.log(clients[i].userId);
+          // //console.log(room.users.includes(clients[i].myId));
+          // //console.log(room.users);
+          // //console.log(clients[i].userId);
 
           // XXX: get new key
           var decoded = jwt.verify(parsedMessage.token, 'tokenSecret');
@@ -213,10 +222,10 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
             clients[i].send(json);
           }
 
-          // console.log(clients[i]);
+          // //console.log(clients[i]);
         } catch(err) {
-          console.log(err);
-          console.log('Error in sector 7G');
+          //console.log(err);
+          //console.log('Error in sector 7G');
         }
       }
     });
