@@ -200,6 +200,12 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
 
     room.lastMessage = parsedMessage.text;
     room.lastMessageTime = parsedMessage.timestamp;
+    room.seenBy = [clients[index].userId];
+    room.deliveredTo = [clients[index].userId];
+
+    console.log(messageJSON);
+    console.log('fffffffffffffffffff');
+
     room.save();
 
     let dbMessage = new Message(messageJSON);

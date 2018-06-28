@@ -95,7 +95,6 @@ router.post("/rooms", passport.authenticate('jwt'), (req, res) => {
             if (!room.name) room.name = '';
             room.name += user.username + ", ";
           });
-          console.log(room.name);
           ctr++; 
           roomMap.push(room);
           if (ctr === rooms.length) {
@@ -127,7 +126,6 @@ router.post("/chats", passport.authenticate('jwt'), (req, res) => {
             if (!room.name) room.name = '';
             room.name += user.username + ", ";
           });
-          console.log(room.name);
           ctr++; 
           roomMap.push(room);
           if (ctr === rooms.length) {
@@ -146,7 +144,6 @@ router.post("/chats", passport.authenticate('jwt'), (req, res) => {
 });
 
 router.post("/messages", passport.authenticate('jwt'), function(req, res){
-  console.log(req.body);
   Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
     if (err) {
       return res.send(err);
@@ -158,16 +155,11 @@ router.post("/messages", passport.authenticate('jwt'), function(req, res){
       messageMap.push(message);
     });
 
-    console.log(messageMap);
-
     res.json(messageMap);
   });
 });
 
 router.post("/last-online", passport.authenticate('jwt'), function(req, res) {
-  console.log(req.body);
-  console.log('I am last online')
-  console.log(req.body)
   User.update(
     { _id: req.body.userId }, 
     { lastOnline: Date.now() },
@@ -176,7 +168,6 @@ router.post("/last-online", passport.authenticate('jwt'), function(req, res) {
         return res.send(err);
       }
 
-      console.log(raw);
       return res.json({success: true})
     }
   );
@@ -189,13 +180,7 @@ router.get("/last-online", passport.authenticate('jwt'), function(req, res) {
       if (err) {
         return res.send(err);
       }
-
-      console.log({
-        success: true,
-        lastOnline: req.query.id,
-        ss: user,
-      });
-
+      
       return res.json({
         success: true,
         lastOnline: user.lastOnline,
@@ -206,6 +191,7 @@ router.get("/last-online", passport.authenticate('jwt'), function(req, res) {
 
 router.post("/message-delivered", passport.authenticate('jwt'), function(req, res){
   console.log(req.body);
+  console.log('ddddddddddddddddddddddddddddddddddddd');
   Message.update(
     { _id: req.body.message._id }, 
     { $push: { deliveredTo: req.body.userId } },
@@ -213,13 +199,24 @@ router.post("/message-delivered", passport.authenticate('jwt'), function(req, re
       if (err) {
         return res.send(err);
       }
-      return res.json({success: true})
+      Room.update(
+        { _id: req.body.message.room }, 
+        { $push: { deliveredTo: req.body.userId } },
+        (err, room) => {
+          if (err) {
+            return res.send(err);
+          }
+          console.log(room);
+          return res.json({success: true})
+        }
+      );
     }
   );
 });
 
 router.post("/message-seen", passport.authenticate('jwt'), function(req, res){
   console.log(req.body);
+  console.log('eeeeeeeeeeeeeeee');
   Message.update(
     { _id: req.body.message._id }, 
     { $push: { seenBy: req.body.userId } },
@@ -227,7 +224,17 @@ router.post("/message-seen", passport.authenticate('jwt'), function(req, res){
       if (err) {
         return res.send(err);
       }
-      return res.json({success: true})
+
+      // Room.update(
+      //   { _id: req.body.message.room }, 
+      //   { $push: { seenBy: req.body.userId } },
+      //   (err, message) => {
+      //     if (err) {
+      //       return res.send(err);
+      //     }
+      //     return res.json({success: true})
+      //   }
+      // );
     }
   );
 });

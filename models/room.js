@@ -10,6 +10,14 @@ let Room = new Schema({
   lastMessageTime: {type: Date, default: Date.now},
   createdAt: { type: Date, default: Date.now },
   icon: String,
+  seenBy: {
+    type: [String],
+    default: []
+  },
+  deliveredTo: {
+    type: [String],
+    default: []
+  },
 });
 
 module.exports = mongoose.model('Room', Room);
