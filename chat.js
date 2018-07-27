@@ -196,6 +196,7 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
       sentByUsername: parsedMessage.username,
       forUsers: users,
       timestamp: parsedMessage.timestamp,
+      sensitive: parsedMessage.sensitive,
     };
 
     room.lastMessage = parsedMessage.text;
