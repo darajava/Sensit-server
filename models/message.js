@@ -12,6 +12,10 @@ let Message = new Schema({
     trim: true,
     required: true
   },
+  originalText: {
+    type: String,
+    required: false
+  },
   forUsers: {
     type: [String],
     default: [],

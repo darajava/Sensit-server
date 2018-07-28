@@ -16,6 +16,8 @@ let server = http.createServer(function(request, response) {});
 
 server.listen(1338, function() {});
 
+let loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+
 function sendDeliveryReciept(message, users, room) {
   for (let i = 0; i < clients.length; i++) {
     let deliverJSON = {
@@ -188,7 +190,7 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
     // we're dealing with a message TODO: add proper logic for message type
 
     parsedMessage = parsedMessage.data;
-    
+
     let messageJSON = {
       room: roomId,
       text: parsedMessage.text,
@@ -198,6 +200,17 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
       timestamp: parsedMessage.timestamp,
       sensitive: parsedMessage.sensitive,
     };
+
+    if (parsedMessage.sensitive) {
+      let lengthToGo = parsedMessage.text.length;
+      messageJSON.originalText = parsedMessage.text;
+      messageJSON.text = '';
+
+      while (lengthToGo > 0) {
+        messageJSON.text += loremIpsum.substring(0, lengthToGo);
+        lengthToGo -= messageJSON.text.length;
+      }
+    }
 
     room.lastMessage = parsedMessage.text;
     room.lastMessageTime = parsedMessage.timestamp;

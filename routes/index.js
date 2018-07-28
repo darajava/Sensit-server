@@ -144,7 +144,7 @@ router.post("/chats", passport.authenticate('jwt'), (req, res) => {
 });
 
 router.post("/messages", passport.authenticate('jwt'), function(req, res){
-  Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
+  Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, { originalText: 0 }, function(err, messages) {
     if (err) {
       return res.send(err);
     }
@@ -158,6 +158,33 @@ router.post("/messages", passport.authenticate('jwt'), function(req, res){
     res.json(messageMap);
   });
 });
+
+
+router.post("/messages-sensitive", passport.authenticate('jwt'), function(req, res){
+  if (req.body.pin != '1234') {
+    res.error();
+    return;
+  }
+
+  Message.find({ $query: {room: req.body.room}, $orderby: { createdAt : 1 } }, function(err, messages) {
+    if (err) {
+      return res.send(err);
+    }
+
+    let messageMap = [];
+
+    messages.forEach(function(message) {
+      if (message.originalText) {
+        message.text = message.originalText;
+      }
+
+      messageMap.push(message);
+    });
+
+    res.json(messageMap);
+  });
+});
+
 
 router.post("/last-online", passport.authenticate('jwt'), function(req, res) {
   User.update(
