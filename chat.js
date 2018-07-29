@@ -199,6 +199,7 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
       forUsers: users,
       timestamp: parsedMessage.timestamp,
       sensitive: parsedMessage.sensitive,
+      image: parsedMessage.image,
     };
 
     if (parsedMessage.sensitive) {
