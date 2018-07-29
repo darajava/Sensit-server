@@ -43,7 +43,7 @@ let Message = new Schema({
   image: {
     type: String,
     required: false,
-  }
+  },
   timestamp: {
     type: Number, // This is the timestamp the frontend generates
   },
