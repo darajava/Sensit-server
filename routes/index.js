@@ -10,16 +10,12 @@ let jwt = require('jsonwebtoken');
 let expressWs = require('express-ws')(router);
 var multer  = require('multer')
 
-var storage = multer.diskStorage(
-    {
-        destination: './public/images/',
-        filename: function ( req, file, cb ) {
-            //req.body is empty...
-            //How could I get the new_file_name property sent from client here?
-            cb( null, 'frog.jpg');
-        }
-    }
-);
+var storage = multer.diskStorage({
+  destination: './public/images/',
+  filename: function ( req, file, cb ) {
+    cb( null, req.body.filename);
+  },
+});
 
 var upload = multer( { storage: storage } );
 
