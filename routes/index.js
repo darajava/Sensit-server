@@ -8,6 +8,28 @@ let Message = require('../models/message');
 let bCrypt = require('bcrypt-nodejs');
 let jwt = require('jsonwebtoken');
 let expressWs = require('express-ws')(router);
+var multer  = require('multer')
+
+var storage = multer.diskStorage(
+    {
+        destination: './public/images/',
+        filename: function ( req, file, cb ) {
+            //req.body is empty...
+            //How could I get the new_file_name property sent from client here?
+            cb( null, 'frog.jpg');
+        }
+    }
+);
+
+var upload = multer( { storage: storage } );
+
+router.post('/uploadimage', upload.single('photo'), function (req, res, next) {
+  // req.file is the `avatar` file
+  // req.body will hold the text fields, if there were any
+  console.log(req.file)
+  res.status(200);
+  res.send({success: true});
+})
 
 
 router.get('/', function (req, res) {
@@ -275,6 +297,21 @@ router.get('/ping', function(req, res){
   res.status(200).send("pong!");
 });
 
+router.get('/uploadimage', function(req, res) {
+  // if (!req.files)
+  //   return res.status(400).send('No files were uploaded.');
+ 
+  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  let sampleFile = req.files.photo;
+ 
+  // Use the mv() method to place the file somewhere on your server
+  sampleFile.mv('/tmp/filename.jpg', function(err) {
+    if (err)
+      return res.status(500).send(err);
+ 
+    res.send('File uploaded!');
+  });
+});
 
 
 module.exports = router;

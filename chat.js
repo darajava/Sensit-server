@@ -226,6 +226,9 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
     let dbMessage = new Message(messageJSON);
 
     dbMessage.save((err, message) => {
+      if (err) {
+        console.error(err);
+      }
       messageJSON = message;
 
       for (let i = 0; i < clients.length; i++) {
@@ -245,8 +248,8 @@ let listenForMessages = (message, users, room, roomId, index, clients) => {
 
           // //console.log(clients[i]);
         } catch(err) {
-          //console.log(err);
-          //console.log('Error in sector 7G');
+          console.log(err);
+          console.log('Error in sector 7G');
         }
       }
     });
