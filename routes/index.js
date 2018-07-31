@@ -13,6 +13,7 @@ var multer  = require('multer')
 var storage = multer.diskStorage({
   destination: './public/images/',
   filename: function ( req, file, cb ) {
+    console.log(req.body);
     cb( null, req.body.filename);
   },
 });
