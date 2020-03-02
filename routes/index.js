@@ -110,10 +110,12 @@ router.post("/rooms", passport.authenticate('jwt'), (req, res) => {
       // If the room doesn't have a name, set a default one
       if (!room.name || room.name.length === 0) {
         User.find({_id: room.users}, (err, users) => {
-          users.forEach((user) => {
-            if (!room.name) room.name = '';
-            room.name += user.username + ", ";
-          });
+          if (users) {
+            users.forEach((user) => {
+              if (!room.name) room.name = '';
+              room.name += user.username + ", ";
+            });
+          }
           ctr++; 
           roomMap.push(room);
           if (ctr === rooms.length) {
@@ -141,10 +143,12 @@ router.post("/chats", passport.authenticate('jwt'), (req, res) => {
       // If the room doesn't have a name, set a default one
       if (!room.name || room.name.length === 0) {
         User.find({_id: room.users}, (err, users) => {
-          users.forEach((user) => {
-            if (!room.name) room.name = '';
-            room.name += user.username + ", ";
-          });
+          if (users) {
+            users.forEach((user) => {
+              if (!room.name) room.name = '';
+              room.name += user.username + ", ";
+            });
+          }
           ctr++; 
           roomMap.push(room);
           if (ctr === rooms.length) {
